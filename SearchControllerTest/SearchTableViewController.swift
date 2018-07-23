@@ -8,6 +8,22 @@
 
 import UIKit
 
+enum Type: Int {
+    case recent, results
+    func raw() -> Int {
+        return self.rawValue
+    }
+    
+    func title() -> String {
+        switch self {
+        case .recent:
+            return "Recent"
+        case .results:
+            return "Results"
+        }
+    }
+}
+
 class SearchTableViewController: UIViewController {
     
     private lazy var searchBar: UISearchBar = {
@@ -15,6 +31,7 @@ class SearchTableViewController: UIViewController {
         temp.placeholder = "Search..."
         temp.barTintColor = UIColor.blue
         temp.returnKeyType = .search
+        temp.delegate = self
         view.addSubview(temp)
         temp.translatesAutoresizingMaskIntoConstraints = false
         temp.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -38,44 +55,63 @@ class SearchTableViewController: UIViewController {
         return temp
     }()
 
-    private var results: [[String]] = {
-        let recent: [String] = [
-            "Andorra",
-            "Sweden",
-            "USA",
-            "Bulgaria",
-        ]
+    private var filteredCountries: [[String]] = []
+    private let unfilteredCountries: [[String]] = {
+        let recent = (["Sweden", "USA", "China", "Latvia"].map { $0.capitalized }).sorted()
+        let temp = (["Sweden", "Androrra", "Spain", "england", "USA", "Canada", "china", "Russia", "germany", "latvia", "France", "Thailand", "Iceland", "Bulgaria", "Netherlands", "Belgium", "Greece", "italy", "Malta"].map { $0.capitalized }).sorted()
         
-        let
+        return [recent, temp]
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        filteredCountries = unfilteredCountries
         searchBar.isHidden = false
-        tableView.reloadData()
+        tableView.isHidden = false
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
+    
 }
 
+extension SearchTableViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        guard let text = searchBar.text, !text.isEmpty else {
+            filteredCountries = unfilteredCountries
+            tableView.reloadData()
+            return
+        }
+        filteredCountries[Type.results.raw()] = unfilteredCountries[Type.results.raw()].filter { return $0.hasPrefix(text) }
+        tableView.reloadData()
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        filteredCountries[Type.results.raw()] = unfilteredCountries[Type.results.raw()]
+        tableView.reloadData()
+    }
+}
 
 extension SearchTableViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return filteredCountries.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return filteredCountries[section].count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "cell") else { return UITableViewCell() }
-        cell.textLabel?.text = "Test"
+        cell.textLabel?.text = filteredCountries[indexPath.section][indexPath.row]
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return Type(rawValue: section)?.title()
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) { }
