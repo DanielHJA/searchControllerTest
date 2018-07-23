@@ -18,6 +18,13 @@ extension UISearchBar {
             }
         }
     }
+    
+    func textfieldForSearchBar() -> UITextField? {
+        if let textfield = self.value(forKey: "searchField") as? UITextField {
+            return textfield
+        }
+        return nil
+    }
 }
 
 class ViewController: UIViewController {
@@ -27,6 +34,13 @@ class ViewController: UIViewController {
         temp.delegate = self
         temp.dataSource = self
         temp.tableFooterView = UIView()
+        
+        if #available(iOS 10.0, *) {
+            temp.refreshControl = refreshControl
+        } else {
+            temp.addSubview(refreshControl)
+        }
+        
        // temp.tableHeaderView = searchController.searchBar
         temp.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         //temp.setContentOffset(CGPoint(x: 0, y: 44), animated: false) // Iniatally hides searchbar
@@ -34,17 +48,32 @@ class ViewController: UIViewController {
         temp.translatesAutoresizingMaskIntoConstraints = false
         temp.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         temp.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        temp.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        temp.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         temp.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         return temp
     }()
     
+    private lazy var searchResultsController: UIViewController = {
+        return SearchTableViewController()
+    }()
+    
     private lazy var searchController: UISearchController = {
-        let temp = UISearchController(searchResultsController: nil)
-        temp.dimsBackgroundDuringPresentation = false
+        let temp = UISearchController(searchResultsController: searchResultsController)
+        //temp.dimsBackgroundDuringPresentation = false
         temp.searchBar.placeholder = "Search..."
         temp.searchBar.setTextFieldApperence()
+        temp.definesPresentationContext = true
         temp.searchBar.delegate = self
+        temp.delegate = self
+        return temp
+    }()
+    
+    lazy var refreshControl: UIRefreshControl = {
+        let temp = UIRefreshControl()
+        temp.backgroundColor = UIColor.clear
+        temp.attributedTitle = NSAttributedString(string: "Reloading...")
+        temp.addTarget(self, action: #selector(handleRefresh(_:)), for: UIControlEvents.valueChanged)
+        temp.tintColor = UIColor.black
         return temp
     }()
     
@@ -64,6 +93,23 @@ class ViewController: UIViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    @objc private func handleRefresh(_ sender: UIRefreshControl){
+        tableView.reloadData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.refreshControl.endRefreshing()
+        }
+    }
+    
+}
+
+extension ViewController: UISearchControllerDelegate {
+    
+    func willPresentSearchController(_ searchController: UISearchController) {
+        DispatchQueue.main.async {
+            searchController.searchResultsController?.view.isHidden = false
+        }
     }
     
 }
@@ -103,6 +149,5 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) { }
-    
 }
 

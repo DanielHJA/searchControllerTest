@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B182EDC210661B7009B2845 /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B182EDB210661B7009B2845 /* SearchTableViewController.swift */; };
 		7B1BA0B920FCFD4B00E6979F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1BA0B820FCFD4B00E6979F /* AppDelegate.swift */; };
 		7B1BA0BB20FCFD4B00E6979F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1BA0BA20FCFD4B00E6979F /* ViewController.swift */; };
 		7B1BA0BE20FCFD4B00E6979F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B1BA0BC20FCFD4B00E6979F /* Main.storyboard */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7B182EDB210661B7009B2845 /* SearchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
 		7B1BA0B520FCFD4B00E6979F /* SearchControllerTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SearchControllerTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B1BA0B820FCFD4B00E6979F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7B1BA0BA20FCFD4B00E6979F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				7B1BA0B820FCFD4B00E6979F /* AppDelegate.swift */,
+				7B182EDB210661B7009B2845 /* SearchTableViewController.swift */,
 				7B1BA0BA20FCFD4B00E6979F /* ViewController.swift */,
 				7B1BA0E820FD0F9100E6979F /* CustomNavigationController.swift */,
 				7B1BA0BC20FCFD4B00E6979F /* Main.storyboard */,
@@ -265,6 +268,7 @@
 				7B1BA0BB20FCFD4B00E6979F /* ViewController.swift in Sources */,
 				7B1BA0B920FCFD4B00E6979F /* AppDelegate.swift in Sources */,
 				7B1BA0E920FD0F9100E6979F /* CustomNavigationController.swift in Sources */,
+				7B182EDC210661B7009B2845 /* SearchTableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
