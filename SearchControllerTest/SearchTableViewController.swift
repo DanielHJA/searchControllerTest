@@ -8,29 +8,32 @@
 
 import UIKit
 
+protocol CountrySelectionDelegate: class {
+    func didSelectCountry(_ country: String)
+}
+
 enum Type: Int {
-    case recent, results
-    func raw() -> Int {
-        return self.rawValue
-    }
-    
+    case recent, filtered, unfiltered
+
     func title() -> String {
         switch self {
-        case .recent:
-            return "Recent"
-        case .results:
-            return "Results"
+        case .recent: return "Recent"
+        case .filtered: return "Results"
+        case .unfiltered: return ""
         }
     }
 }
 
 class SearchTableViewController: UIViewController {
     
+    weak var delegate: CountrySelectionDelegate?
+    
     private lazy var searchBar: UISearchBar = {
         let temp = UISearchBar()
         temp.placeholder = "Search..."
         temp.barTintColor = UIColor.blue
         temp.returnKeyType = .search
+        temp.setTextFieldApperence()
         temp.delegate = self
         view.addSubview(temp)
         temp.translatesAutoresizingMaskIntoConstraints = false
@@ -55,17 +58,26 @@ class SearchTableViewController: UIViewController {
         return temp
     }()
 
-    private var filteredCountries: [[String]] = []
-    private let unfilteredCountries: [[String]] = {
+//    private var filteredCountries: [[String]] = []
+//    private let unfilteredCountries: [[String]] = {
+//        let recent = (["Sweden", "USA", "China", "Latvia"].map { $0.capitalized }).sorted()
+//        let temp = (["Sweden", "Androrra", "Spain", "england", "USA", "Canada", "china", "Russia", "germany", "latvia", "France", "Thailand", "Iceland", "Bulgaria", "Netherlands", "Belgium", "Greece", "italy", "Malta"].map { $0.capitalized }).sorted()
+//
+//        return [recent, temp]
+//    }()
+    
+    var countries: [Type: [String]] = {
+        var temp = [Type: [String]]()
         let recent = (["Sweden", "USA", "China", "Latvia"].map { $0.capitalized }).sorted()
-        let temp = (["Sweden", "Androrra", "Spain", "england", "USA", "Canada", "china", "Russia", "germany", "latvia", "France", "Thailand", "Iceland", "Bulgaria", "Netherlands", "Belgium", "Greece", "italy", "Malta"].map { $0.capitalized }).sorted()
-        
-        return [recent, temp]
+        let unfiltered = (["Sweden", "Androrra", "Spain", "england", "USA", "Canada", "china", "Russia", "germany", "latvia", "France", "Thailand", "Iceland", "Bulgaria", "Netherlands", "Belgium", "Greece", "italy", "Malta"].map { $0.capitalized }).sorted()
+        temp[.recent] = recent
+        temp[.unfiltered] = unfiltered
+        temp[.filtered] = unfiltered
+        return temp
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        filteredCountries = unfilteredCountries
         searchBar.isHidden = false
         tableView.isHidden = false
     }
@@ -79,17 +91,17 @@ class SearchTableViewController: UIViewController {
 extension SearchTableViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         guard let text = searchBar.text, !text.isEmpty else {
-            filteredCountries = unfilteredCountries
+            countries[.filtered] = countries[.unfiltered]
             tableView.reloadData()
             return
         }
-        filteredCountries[Type.results.raw()] = unfilteredCountries[Type.results.raw()].filter { return $0.hasPrefix(text) }
+        countries[.filtered] = countries[.unfiltered]?.filter { return $0.hasPrefix(text) }
         tableView.reloadData()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
-        filteredCountries[Type.results.raw()] = unfilteredCountries[Type.results.raw()]
+        countries[.filtered] = countries[.unfiltered]
         tableView.reloadData()
     }
 }
@@ -97,16 +109,16 @@ extension SearchTableViewController: UISearchBarDelegate {
 extension SearchTableViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return filteredCountries.count
+        return [countries[.recent], countries[.filtered]].count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredCountries[section].count
+        return [countries[.recent], countries[.filtered]][section]!.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "cell") else { return UITableViewCell() }
-        cell.textLabel?.text = filteredCountries[indexPath.section][indexPath.row]
+        cell.textLabel?.text = [countries[.recent], countries[.filtered]][indexPath.section]?[indexPath.row]
         return cell
     }
     
@@ -114,5 +126,17 @@ extension SearchTableViewController: UITableViewDelegate, UITableViewDataSource 
         return Type(rawValue: section)?.title()
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) { }
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 60.0
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80.0
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let country = [countries[.recent], countries[.filtered]][indexPath.section]![indexPath.row]
+        delegate?.didSelectCountry(country)
+    }
 }

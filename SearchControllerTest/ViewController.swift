@@ -11,7 +11,17 @@ import UIKit
 class ViewController: UIViewController {
     
     private lazy var searchResultsController: UIViewController = {
-        return SearchTableViewController()
+        let temp = SearchTableViewController()
+        temp.delegate = self
+        return temp
+    }()
+    
+    private lazy var label: UILabel = {
+        let temp = UILabel(frame: CGRect(x: view.frame.width / 2, y: view.frame.height / 2, width: 200.0, height: 70.0))
+        temp.textColor = UIColor.white
+        temp.font = UIFont.systemFont(ofSize: 20.0, weight: .medium)
+        temp.backgroundColor = UIColor.red
+        return temp
     }()
     
     private lazy var searchController: UISearchController = {
@@ -29,6 +39,7 @@ class ViewController: UIViewController {
         title = "Search"
         view.backgroundColor = UIColor.white
         navigationItem.searchController = searchController
+        view.addSubview(label)
     }
 
     override func didReceiveMemoryWarning() {
@@ -43,6 +54,18 @@ extension ViewController: UISearchControllerDelegate {
         DispatchQueue.main.async {
             searchController.searchResultsController?.view.isHidden = false
         }
+    }
+    
+    func willDismissSearchController(_ searchController: UISearchController) {
+        
+    }
+}
+
+extension ViewController: CountrySelectionDelegate {
+    func didSelectCountry(_ country: String) {
+        label.text = country
+        searchController.isActive = false
+        searchController.dismiss(animated: true, completion: nil)
     }
 }
 
